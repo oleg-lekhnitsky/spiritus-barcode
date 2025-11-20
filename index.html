@@ -169,8 +169,19 @@
 
                 const xAttr = textEl.getAttribute('x');
                 const yAttr = textEl.getAttribute('y');
-                const x = xAttr ? parseFloat(xAttr) : 0;
+                let x = xAttr ? parseFloat(xAttr) : 0;
                 const y = yAttr ? parseFloat(yAttr) : 0;
+
+                // Respect text-anchor so outlined text stays centered/aligned
+                const anchor = textEl.getAttribute('text-anchor') || 'start';
+                if (anchor !== 'start') {
+                    const advanceWidth = font.getAdvanceWidth(text, fontSize);
+                    if (anchor === 'middle') {
+                        x -= advanceWidth / 2;
+                    } else if (anchor === 'end') {
+                        x -= advanceWidth;
+                    }
+                }
 
                 // Create a single path for the full string
                 const path = font.getPath(text, x, y, fontSize);
