@@ -100,8 +100,10 @@
         width: 570px;
         height: 730px;
         background-color: white;
-
-
+        filter: drop-shadow(5px 5px 100px #00000014);
+        margin-bottom: 120px;
+        transform-origin: top left;
+        scale: 0.75;
       }
 
       p {
@@ -364,13 +366,13 @@
         return text;
       }
 
-      function getRelativeRect(element, rootRect) {
+      function getRelativeRect(element, rootRect, scaleX = 1, scaleY = 1) {
         const rect = element.getBoundingClientRect();
         return {
-          x: rect.left - rootRect.left,
-          y: rect.top - rootRect.top,
-          width: rect.width,
-          height: rect.height,
+          x: (rect.left - rootRect.left) * scaleX,
+          y: (rect.top - rootRect.top) * scaleY,
+          width: rect.width * scaleX,
+          height: rect.height * scaleY,
         };
       }
 
@@ -406,7 +408,7 @@
         return mergedPath;
       }
 
-      function addDecorationRect(svgEl, labelRect, element) {
+      function addDecorationRect(svgEl, labelRect, element, scaleX = 1, scaleY = 1) {
         const style = window.getComputedStyle(element);
         const background = style.backgroundColor;
         const borderWidth = parseFloat(style.borderTopWidth) || 0;
@@ -416,7 +418,7 @@
 
         if (!hasBorder && !hasFill) return;
 
-        const box = getRelativeRect(element, labelRect);
+        const box = getRelativeRect(element, labelRect, scaleX, scaleY);
         const rect = document.createElementNS(SVG_NS, "rect");
         rect.setAttribute("x", box.x);
         rect.setAttribute("y", box.y);
@@ -440,10 +442,16 @@
         svgEl.appendChild(rect);
       }
 
-      async function appendTextPathsForElement(svgEl, labelRect, element) {
+      async function appendTextPathsForElement(
+        svgEl,
+        labelRect,
+        element,
+        scaleX = 1,
+        scaleY = 1
+      ) {
         const style = window.getComputedStyle(element);
         const font = await loadFontByFamily(style.fontFamily);
-        const box = getRelativeRect(element, labelRect);
+        const box = getRelativeRect(element, labelRect, scaleX, scaleY);
         const fontSize = parseFloat(style.fontSize) || 16;
         const paddingTop = parseFloat(style.paddingTop) || 0;
         const paddingLeft = parseFloat(style.paddingLeft) || 0;
@@ -643,12 +651,16 @@
         }
 
         const labelRect = label.getBoundingClientRect();
-        const width = Math.round(labelRect.width);
-        const height = Math.round(labelRect.height);
-        if (!width || !height) {
+        const rawWidth = labelRect.width || label.offsetWidth;
+        const rawHeight = labelRect.height || label.offsetHeight;
+        const width = Math.round(label.offsetWidth || rawWidth);
+        const height = Math.round(label.offsetHeight || rawHeight);
+        if (!width || !height || !rawWidth || !rawHeight) {
           alert("Label has no size to export.");
           return;
         }
+        const scaleX = width / rawWidth;
+        const scaleY = height / rawHeight;
 
         const svgEl = document.createElementNS(SVG_NS, "svg");
         svgEl.setAttribute("xmlns", SVG_NS);
@@ -667,11 +679,11 @@
         svgEl.appendChild(backgroundRect);
 
         const textElements = LABEL_TEXT_IDS.map((id) => document.getElementById(id)).filter(Boolean);
-        textElements.forEach((el) => addDecorationRect(svgEl, labelRect, el));
+        textElements.forEach((el) => addDecorationRect(svgEl, labelRect, el, scaleX, scaleY));
 
         for (const element of textElements) {
           try {
-            await appendTextPathsForElement(svgEl, labelRect, element);
+            await appendTextPathsForElement(svgEl, labelRect, element, scaleX, scaleY);
           } catch (e) {
             console.warn("Could not outline label text element:", element, e);
           }
@@ -681,7 +693,7 @@
         if (barcode && barcode.innerHTML.trim()) {
           const barcodeClone = barcode.cloneNode(true);
           barcodeClone.removeAttribute("id");
-          const barcodeRect = getRelativeRect(barcode, labelRect);
+          const barcodeRect = getRelativeRect(barcode, labelRect, scaleX, scaleY);
           barcodeClone.setAttribute("x", barcodeRect.x);
           barcodeClone.setAttribute("y", barcodeRect.y);
           barcodeClone.setAttribute("width", barcodeRect.width);
