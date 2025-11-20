@@ -241,7 +241,7 @@
       const DEFAULT_FONT = "PPNeueMontreal-Medium";
       const FONT_URLS = {
         "PPNeueMontreal-Medium": "./PPNeueMontreal-Medium.ttf",
-        GaramondNarrowLightITC: "./GaramondNarrowLightITC.otf",
+        GaramondNarrowLightITC: "./GaramondNarrowLightITC.ttf",
       };
       const fontPromises = {};
       const SVG_NS = "http://www.w3.org/2000/svg";
@@ -702,7 +702,7 @@
           source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source;
         }
 
-        const blob = new Blob([svg], {
+        const blob = new Blob([source], {
           type: "image/svg+xml;charset=utf-8",
         });
         const url = URL.createObjectURL(blob);
