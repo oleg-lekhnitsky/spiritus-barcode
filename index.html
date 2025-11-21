@@ -240,6 +240,65 @@
     <div id="bulkError"></div>
 
     <script>
+
+
+function openPrintLabelWindow() {
+  const label = document.getElementById("coffeeLabel");
+  if (!label) {
+    alert("Label not found.");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank", "width=570,height=730");
+  if (!printWindow) {
+    alert("Please allow popups to print the label.");
+    return;
+  }
+
+  // Grab all inline <style> tags from <head> (same trick you use for SVG)
+  const styles = Array.from(document.querySelectorAll("head style"))
+    .map((style) => style.textContent || "")
+    .join("\n");
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Coffee Label</title>
+  <style>
+    ${styles}
+    body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    @page {
+      margin: 0;
+      /* You can tweak page size if needed; leaving it auto uses printer defaults */
+    }
+  </style>
+</head>
+<body>
+  ${label.outerHTML}
+  <script>
+    window.onload = function () {
+      window.focus();
+      window.print();
+    };
+  <\/script>
+</body>
+</html>`;
+
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
+}
+
       // PDF EXPORT FUNCTION (ADDED)
       async function downloadLabelPdf() {
         const label = document.getElementById("coffeeLabel");
@@ -265,9 +324,12 @@
         pdf.save("coffee-label.pdf");
       }
 
-      document
-        .getElementById("downloadLabelPdfBtn")
-        .addEventListener("click", downloadLabelPdf);
+document
+  .getElementById("downloadLabelPdfBtn")
+  .addEventListener("click", openPrintLabelWindow);
+
+
+  
 
 
       // ------------ TEXT → OUTLINES HELPERS (no style changes) ------------
