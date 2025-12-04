@@ -1,303 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>EAN-13 Generator (Single + Bulk)</title>
-    <script src="https://unpkg.com/jsbarcode@latest/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- Font to outlines helper -->
-    <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 
-    <!-- ADDED: PDF export libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<head>
+  <meta charset="UTF-8" />
+  <title>EAN-13 Generator (Single + Bulk)</title>
+  <script src="https://unpkg.com/jsbarcode@latest/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Font to outlines helper -->
+  <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 
-    <style>
-      * {
-        box-sizing: border-box;
-      }
+  <!-- ADDED: PDF export libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-      @font-face {
-        font-family: "GaramondNarrowLightITC";
-        src: url("./GaramondNarrowLightITC.woff2") format("woff2");
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-      }
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-      @font-face {
-        font-family: "PP Neue Montreal";
-        src: url("./PPNeueMontreal-Medium.woff2") format("woff2");
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-      }
+    @font-face {
+      font-family: "GaramondNarrowLightITC";
+      src: url("./GaramondNarrowLightITC.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
 
+    @font-face {
+      font-family: "PP Neue Montreal";
+      src: url("./PPNeueMontreal-Medium.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body {
+      font-family: "PP Neue Montreal";
+      padding: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      background-color: #f2f2f2;
+      box-sizing: border-box;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"],
+    textarea {
+      padding: 6px 10px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    input[type="text"] {
+      width: 180px;
+    }
+
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      resize: none;
+      height: 200px;
+    }
+
+    button {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      border: solid 2px black;
+      background-color: black;
+      color: white;
+      border-radius: 3px;
+      transition: all 0.7s ease;
+    }
+
+    button:hover {
+      background-color: #d593f6;
+      border-color: #d593f6;
+      transition: all 0.1s ease;
+    }
+
+    #error,
+    #bulkError {
+      color: #c00;
+      font-size: 12px;
+      margin-top: 4px;
+      white-space: pre-line;
+    }
+
+    h2 {
+      margin-top: 32px;
+      margin-bottom: 8px;
+      font-size: 48px;
+      font-weight: 500;
+    }
+
+    .label-controls {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .label-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .label-row input {
+      flex: 1;
+    }
+
+    .label {
+      width: 570px;
+      height: 710px;
+      background-color: white;
+    }
+
+    p {
+      text-transform: uppercase;
+      text-align: center;
+      margin: 0;
+      font-family: "PP Neue Montreal";
+    }
+
+    .label {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      outline: #d593f6;
+    }
+
+    .typography {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      height: inherit;
+    }
+
+    .coffee-class {
+      font-size: 32px;
+      padding: 12px 18px;
+      border: 3px solid black;
+      border-radius: 48px;
+      display: inline-flex;
+      width: fit-content;
+    }
+
+    p.coffee-region {
+      font-family: "GaramondNarrowLightITC";
+      font-size: 107px;
+      line-height: 90%;
+      letter-spacing: -0.03em;
+    }
+
+    .coffee-descriptors {
+      font-size: 32px;
+      line-height: 108%;
+    }
+
+    .coffee-method {
+      font-size: 22px;
+      line-height: 108%;
+      max-width: 30%;
+    }
+
+    @media print {
       body {
-        font-family: "PP Neue Montreal";
-        padding: 24px;
-        max-width: 900px;
-        margin: 0 auto;
-        min-height: 100dvh;
-        background-color: #f2f2f2;
-        box-sizing: border-box;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background-color: #fff5ff !important;
+        /* light bg so edges are visible */
       }
+    }
+  </style>
+</head>
 
-      .controls {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-      }
-
-      input[type="text"],
-      textarea {
-        padding: 6px 10px;
-        font-size: 14px;
-        font-family: inherit;
-      }
-
-      input[type="text"] {
-        width: 180px;
-      }
-
-      textarea {
-        width: 100%;
-        box-sizing: border-box;
-        resize: none;
-        height: 200px;
-      }
-
-      button {
-        padding: 6px 12px;
-        font-size: 14px;
-        cursor: pointer;
-        border: solid 2px black;
-        background-color: black;
-        color: white;
-        border-radius: 3px;
-        transition: all 0.7s ease;
-      }
-
-      button:hover {
-        background-color: #d593f6;
-        border-color: #d593f6;
-        transition: all 0.1s ease;
-      }
-
-      #error,
-      #bulkError {
-        color: #c00;
-        font-size: 12px;
-        margin-top: 4px;
-        white-space: pre-line;
-      }
-
-      h2 {
-        margin-top: 32px;
-        margin-bottom: 8px;
-        font-size: 48px;
-        font-weight: 500;
-      }
-
-      .label-controls {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .label-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        width: 100%;
-      }
-
-      .label-row input {
-        flex: 1;
-      }
-
-      .label {
-        width: 570px;
-        height: 710px;
-        background-color: white;
-      }
-
-      p {
-        text-transform: uppercase;
-        text-align: center;
-        margin: 0;
-        font-family: "PP Neue Montreal";
-      }
-
-      .label {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 10px;
-        outline: #d593f6;
-      }
-      .typography {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 32px;
-        height: inherit;
-      }
-
-      .coffee-class {
-        font-size: 32px;
-        padding: 12px 18px;
-        border: 3px solid black;
-        border-radius: 48px;
-        display: inline-flex;
-        width: fit-content;
-      }
-
-      p.coffee-region {
-        font-family: "GaramondNarrowLightITC";
-        font-size: 107px;
-        line-height: 90%;
-        letter-spacing: -0.03em;
-      }
-
-      .coffee-descriptors {
-        font-size: 32px;
-        line-height: 108%;
-      }
-      .coffee-method {
-        font-size: 22px;
-        line-height: 108%;
-        max-width: 30%;
-      }
-
-      @media print {
-        body {
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-          background-color: #fff5ff !important; /* light bg so edges are visible */
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <!-- Single code section -->
-    <h2>Штрих-код EAN-13</h2>
-    <div class="controls">
-      <label>
-        <input
-          id="codeInput"
-          type="text"
-          value="4816196900019"
-          maxlength="13"
-        />
-      </label>
-      <button id="generateBtn">Сгенерироватть</button>
-      <button id="downloadBtn">Скачать</button>
+<body>
+  <!-- Single code section -->
+  <h2>Штрих-код EAN-13</h2>
+  <div class="controls">
+    <label>
+      <input id="codeInput" type="text" value="4816196900019" maxlength="13" />
+    </label>
+    <button id="generateBtn">Сгенерироватть</button>
+    <button id="downloadBtn">Скачать</button>
+  </div>
+  <div id="error"></div>
+  <svg id="barcodePreview"></svg>
+  <h2>Текст для этикетки</h2>
+  <div class="controls label-controls">
+    <div class="label-row">
+      <input id="labelClassInput" type="text" value="Эспрессо" placeholder="Класс кофе" />
+      <input id="labelRegionInput" type="text" value="Эфиопия сидамо" placeholder="Регион" />
     </div>
-    <div id="error"></div>
-    <svg id="barcodePreview"></svg>
-    <h2>Текст для этикетки</h2>
-    <div class="controls label-controls">
-      <div class="label-row">
-        <input
-          id="labelClassInput"
-          type="text"
-          value="Эспрессо"
-          placeholder="Класс кофе"
-        />
-        <input
-          id="labelRegionInput"
-          type="text"
-          value="Эфиопия сидамо"
-          placeholder="Регион"
-        />
-      </div>
-      <div class="label-row">
-        <input
-          id="labelDescriptorsInput"
-          type="text"
-          value="Абрикос, бергамот, цитрусовый микс"
-          placeholder="Дескрипторы"
-        />
-        <input
-          id="labelMethodInput"
-          type="text"
-          value="Мытая обработка"
-          placeholder="Метод обработки"
-        />
-      </div>
+    <div class="label-row">
+      <input id="labelDescriptorsInput" type="text" value="Абрикос, бергамот, цитрусовый микс"
+        placeholder="Дескрипторы" />
+      <input id="labelMethodInput" type="text" value="Мытая обработка" placeholder="Метод обработки" />
+    </div>
 
-      <label
-        style="
+    <label style="
           display: flex;
           align-items: center;
           gap: 6px;
           margin-top: 4px;
           margin-bottom: 12px;
-        "
-      >
-        <input type="checkbox" id="toggleLabelBarcode" checked />
-        Показывать штрих-код на этикетке
-      </label>
+        ">
+      <input type="checkbox" id="toggleLabelBarcode" checked />
+      Показывать штрих-код на этикетке
+    </label>
 
-      <button style="display: none" id="downloadLabelBtn">
-        Скачать этикетку (SVG)
-      </button>
+    <button style="display: none" id="downloadLabelBtn">
+      Скачать этикетку (SVG)
+    </button>
 
-      <!-- ADDED: PDF BUTTON -->
-      <button id="downloadLabelPdfBtn">Скачать этикетку (PDF)</button>
+    <!-- ADDED: PDF BUTTON -->
+    <button id="downloadLabelPdfBtn">Скачать этикетку (PDF)</button>
+  </div>
+
+  <div class="label" id="coffeeLabel">
+    <div class="typography">
+      <p class="coffee-class" id="labelCoffeeClass">Эспрессо</p>
+      <p class="coffee-region" id="labelCoffeeRegion">Эфиопия сидамо</p>
+      <p class="coffee-descriptors" id="labelCoffeeDescriptors">
+        Абрикос, бергамот, цитрусовый микс
+      </p>
+      <p class="coffee-method" id="labelCoffeeMethod">мытая обработка</p>
     </div>
-
-    <div class="label" id="coffeeLabel">
-      <div class="typography">
-        <p class="coffee-class" id="labelCoffeeClass">Эспрессо</p>
-        <p class="coffee-region" id="labelCoffeeRegion">Эфиопия сидамо</p>
-        <p class="coffee-descriptors" id="labelCoffeeDescriptors">
-          Абрикос, бергамот, цитрусовый микс
-        </p>
-        <p class="coffee-method" id="labelCoffeeMethod">мытая обработка</p>
-      </div>
-      <div class="barcode">
-        <svg id="labelBarcode"></svg>
-      </div>
+    <div class="barcode">
+      <svg id="labelBarcode"></svg>
     </div>
+  </div>
 
-    <h2>Несколько EAN-13 (один на строчку)</h2>
-    <textarea
-      id="bulkInput"
-      placeholder="481619690001
+  <h2>Несколько EAN-13 (один на строчку)</h2>
+  <textarea id="bulkInput" placeholder="481619690001
 590123412345 
-400638133393"
-    ></textarea>
-    <div class="controls">
-      <button id="bulkDownloadBtn">Сгенерировать и скачать архив</button>
-    </div>
-    <div id="bulkError"></div>
+400638133393"></textarea>
+  <div class="controls">
+    <button id="bulkDownloadBtn">Сгенерировать и скачать архив</button>
+  </div>
+  <div id="bulkError"></div>
 
-    <script>
-      function openPrintLabelWindow() {
-        const label = document.getElementById("coffeeLabel");
-        if (!label) {
-          alert("Label not found.");
-          return;
-        }
+  <script>
+    function openPrintLabelWindow() {
+      const label = document.getElementById("coffeeLabel");
+      if (!label) {
+        alert("Label not found.");
+        return;
+      }
 
-        const printWindow = window.open("", "_blank", "width=570,height=710");
-        if (!printWindow) {
-          alert("Please allow popups to print the label.");
-          return;
-        }
+      const printWindow = window.open("", "_blank", "width=570,height=710");
+      if (!printWindow) {
+        alert("Please allow popups to print the label.");
+        return;
+      }
 
-        // Grab all inline <style> tags from <head> (same trick you use for SVG)
-        const styles = Array.from(document.querySelectorAll("head style"))
-          .map((style) => style.textContent || "")
-          .join("\n");
+      // Grab all inline <style> tags from <head> (same trick you use for SVG)
+      const styles = Array.from(document.querySelectorAll("head style"))
+        .map((style) => style.textContent || "")
+        .join("\n");
 
-        const html = `
+      const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -316,13 +291,14 @@
     }
     @page {
       margin: 0;
-      
+      padding:0;
       background: gray;
       height: 710px;
-      width: 530px;
+      width: 570px;
       
       /* You can tweak page size if needed; leaving it auto uses printer defaults */
     }
+      
 
     
   </style>
@@ -338,249 +314,249 @@
 </body>
 </html>`;
 
-        printWindow.document.open();
-        printWindow.document.write(html);
-        printWindow.document.close();
-      }
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
 
-      // PDF EXPORT FUNCTION (ADDED)
-      async function downloadLabelPdf() {
-        const label = document.getElementById("coffeeLabel");
-        if (!label) return;
+    // PDF EXPORT FUNCTION (ADDED)
+    async function downloadLabelPdf() {
+      const label = document.getElementById("coffeeLabel");
+      if (!label) return;
 
-        const canvas = await html2canvas(label, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-        });
+      const canvas = await html2canvas(label, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
 
-        const img = canvas.toDataURL("image/png");
-        const { jsPDF } = window.jspdf;
+      const img = canvas.toDataURL("image/png");
+      const { jsPDF } = window.jspdf;
 
-        const pdf = new jsPDF({
-          orientation: canvas.width > canvas.height ? "landscape" : "portrait",
-          unit: "px",
-          format: [canvas.width, canvas.height],
-        });
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? "landscape" : "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height],
+      });
 
-        pdf.addImage(img, "PNG", 0, 0, canvas.width, canvas.height);
-        pdf.save("coffee-label.pdf");
-      }
+      pdf.addImage(img, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save("coffee-label.pdf");
+    }
 
-      document
-        .getElementById("downloadLabelPdfBtn")
-        .addEventListener("click", openPrintLabelWindow);
+    document
+      .getElementById("downloadLabelPdfBtn")
+      .addEventListener("click", openPrintLabelWindow);
 
-      // ------------ TEXT → OUTLINES HELPERS (no style changes) ------------
+    // ------------ TEXT → OUTLINES HELPERS (no style changes) ------------
 
-      const INTER_FONT_URL = "./PPNeueMontreal-Medium.woff2";
+    const INTER_FONT_URL = "./PPNeueMontreal-Medium.woff2";
 
-      let interFontPromise = null;
+    let interFontPromise = null;
 
-      function loadInterFont() {
-        if (!interFontPromise) {
-          interFontPromise = new Promise((resolve, reject) => {
-            if (!window.opentype) {
-              reject(new Error("opentype.js not loaded"));
-              return;
-            }
-            opentype.load(INTER_FONT_URL, function (err, font) {
-              if (err) {
-                console.error("Error loading Inter font for outlining:", err);
-                reject(err);
-              } else {
-                resolve(font);
-              }
-            });
-          });
-        }
-        return interFontPromise;
-      }
-
-      function getFontSizeFromText(textEl) {
-        const direct = textEl.getAttribute("font-size");
-        if (direct) return parseFloat(direct);
-
-        const style = textEl.getAttribute("style") || "";
-        const match = style.match(/font-size:\s*([\d.]+)px/);
-        if (match) return parseFloat(match[1]);
-
-        return 16;
-      }
-
-      function getFillFromText(textEl) {
-        const direct = textEl.getAttribute("fill");
-        if (direct && direct !== "none") return direct;
-
-        const style = textEl.getAttribute("style") || "";
-        const match = style.match(/fill:\s*([^;]+)/);
-        if (match) return match[1].trim();
-
-        return "#000000";
-      }
-
-      async function outlineTextInSvg(svgElement) {
-        const font = await loadInterFont();
-        const textNodes = Array.from(svgElement.querySelectorAll("text"));
-
-        textNodes.forEach((textEl) => {
-          const text = textEl.textContent;
-          if (!text || !text.trim()) return;
-
-          const fontSize = getFontSizeFromText(textEl);
-          const fill = getFillFromText(textEl);
-
-          const xAttr = textEl.getAttribute("x");
-          const yAttr = textEl.getAttribute("y");
-          let x = xAttr ? parseFloat(xAttr) : 0;
-          const y = yAttr ? parseFloat(yAttr) : 0;
-
-          const anchor = textEl.getAttribute("text-anchor") || "start";
-          if (anchor !== "start") {
-            const advanceWidth = font.getAdvanceWidth(text, fontSize);
-            if (anchor === "middle") {
-              x -= advanceWidth / 2;
-            } else if (anchor === "end") {
-              x -= advanceWidth;
-            }
-          }
-
-          const path = font.getPath(text, x, y, fontSize);
-
-          let d;
-          if (typeof path.toPathData === "function") {
-            d = path.toPathData(2);
-          } else if (typeof path.toSVG === "function") {
-            const svgString = path.toSVG();
-            const m = svgString.match(/d="([^"]+)"/);
-            d = m ? m[1] : "";
-          } else {
-            console.warn("No toPathData/toSVG; skipping outlining.");
+    function loadInterFont() {
+      if (!interFontPromise) {
+        interFontPromise = new Promise((resolve, reject) => {
+          if (!window.opentype) {
+            reject(new Error("opentype.js not loaded"));
             return;
           }
+          opentype.load(INTER_FONT_URL, function (err, font) {
+            if (err) {
+              console.error("Error loading Inter font for outlining:", err);
+              reject(err);
+            } else {
+              resolve(font);
+            }
+          });
+        });
+      }
+      return interFontPromise;
+    }
 
-          if (!d) return;
+    function getFontSizeFromText(textEl) {
+      const direct = textEl.getAttribute("font-size");
+      if (direct) return parseFloat(direct);
 
-          const pathEl = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path"
-          );
-          pathEl.setAttribute("d", d);
-          pathEl.setAttribute("fill", fill);
+      const style = textEl.getAttribute("style") || "";
+      const match = style.match(/font-size:\s*([\d.]+)px/);
+      if (match) return parseFloat(match[1]);
 
-          const transform = textEl.getAttribute("transform");
-          if (transform) {
-            pathEl.setAttribute("transform", transform);
+      return 16;
+    }
+
+    function getFillFromText(textEl) {
+      const direct = textEl.getAttribute("fill");
+      if (direct && direct !== "none") return direct;
+
+      const style = textEl.getAttribute("style") || "";
+      const match = style.match(/fill:\s*([^;]+)/);
+      if (match) return match[1].trim();
+
+      return "#000000";
+    }
+
+    async function outlineTextInSvg(svgElement) {
+      const font = await loadInterFont();
+      const textNodes = Array.from(svgElement.querySelectorAll("text"));
+
+      textNodes.forEach((textEl) => {
+        const text = textEl.textContent;
+        if (!text || !text.trim()) return;
+
+        const fontSize = getFontSizeFromText(textEl);
+        const fill = getFillFromText(textEl);
+
+        const xAttr = textEl.getAttribute("x");
+        const yAttr = textEl.getAttribute("y");
+        let x = xAttr ? parseFloat(xAttr) : 0;
+        const y = yAttr ? parseFloat(yAttr) : 0;
+
+        const anchor = textEl.getAttribute("text-anchor") || "start";
+        if (anchor !== "start") {
+          const advanceWidth = font.getAdvanceWidth(text, fontSize);
+          if (anchor === "middle") {
+            x -= advanceWidth / 2;
+          } else if (anchor === "end") {
+            x -= advanceWidth;
           }
+        }
 
-          textEl.parentNode.replaceChild(pathEl, textEl);
+        const path = font.getPath(text, x, y, fontSize);
+
+        let d;
+        if (typeof path.toPathData === "function") {
+          d = path.toPathData(2);
+        } else if (typeof path.toSVG === "function") {
+          const svgString = path.toSVG();
+          const m = svgString.match(/d="([^"]+)"/);
+          d = m ? m[1] : "";
+        } else {
+          console.warn("No toPathData/toSVG; skipping outlining.");
+          return;
+        }
+
+        if (!d) return;
+
+        const pathEl = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        pathEl.setAttribute("d", d);
+        pathEl.setAttribute("fill", fill);
+
+        const transform = textEl.getAttribute("transform");
+        if (transform) {
+          pathEl.setAttribute("transform", transform);
+        }
+
+        textEl.parentNode.replaceChild(pathEl, textEl);
+      });
+    }
+
+    const baseBarcodeOptions = {
+      format: "ean13",
+      lineColor: "#000000",
+      background: "#ffffff",
+      width: 2,
+      height: 20,
+      font: "PP Neue Montreal",
+      fontSize: 18,
+      flat: true,
+      textMargin: 0,
+    };
+
+    function generateBarcode(code) {
+      const errorEl = document.getElementById("error");
+      errorEl.textContent = "";
+
+      if (!/^\d{12,13}$/.test(code)) {
+        errorEl.textContent = "Code must be 12 or 13 digits (numbers only).";
+        return;
+      }
+
+      const preview = document.getElementById("barcodePreview");
+      if (preview) {
+        JsBarcode(preview, code, {
+          ...baseBarcodeOptions,
+          margin: 10,
         });
       }
 
-      const baseBarcodeOptions = {
-        format: "ean13",
-        lineColor: "#000000",
-        background: "#ffffff",
-        width: 2,
-        height: 20,
-        font: "PP Neue Montreal",
-        fontSize: 18,
-        flat: true,
-        textMargin: 0,
-      };
+      const labelSvg = document.getElementById("labelBarcode");
+      if (labelSvg) {
+        JsBarcode(labelSvg, code, {
+          ...baseBarcodeOptions,
+          margin: 0,
+        });
+      }
+    }
 
-      function generateBarcode(code) {
-        const errorEl = document.getElementById("error");
-        errorEl.textContent = "";
+    async function downloadSVG() {
+      const svg = document.getElementById("barcodePreview");
+      const code = document.getElementById("codeInput").value.trim();
 
-        if (!/^\d{12,13}$/.test(code)) {
-          errorEl.textContent = "Code must be 12 or 13 digits (numbers only).";
-          return;
-        }
-
-        const preview = document.getElementById("barcodePreview");
-        if (preview) {
-          JsBarcode(preview, code, {
-            ...baseBarcodeOptions,
-            margin: 10,
-          });
-        }
-
-        const labelSvg = document.getElementById("labelBarcode");
-        if (labelSvg) {
-          JsBarcode(labelSvg, code, {
-            ...baseBarcodeOptions,
-            margin: 0,
-          });
-        }
+      if (!svg || !svg.innerHTML.trim()) {
+        alert("Generate a barcode first.");
+        return;
       }
 
-      async function downloadSVG() {
-        const svg = document.getElementById("barcodePreview");
-        const code = document.getElementById("codeInput").value.trim();
+      const svgClone = svg.cloneNode(true);
+      try {
+        await outlineTextInSvg(svgClone);
+      } catch (e) {
+        console.warn("Could not outline text:", e);
+      }
 
-        if (!svg || !svg.innerHTML.trim()) {
-          alert("Generate a barcode first.");
-          return;
-        }
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svgClone);
 
-        const svgClone = svg.cloneNode(true);
+      if (!source.match(/^<\?xml/)) {
+        source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source;
+      }
+
+      const blob = new Blob([source], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ean13-${code || "barcode"}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function downloadLabelSvg() {
+      const label = document.getElementById("coffeeLabel");
+      if (!label) {
+        alert("Label not found.");
+        return;
+      }
+
+      const labelClone = label.cloneNode(true);
+      const barcodeClone = labelClone.querySelector("svg");
+      if (barcodeClone) {
         try {
-          await outlineTextInSvg(svgClone);
+          await outlineTextInSvg(barcodeClone);
         } catch (e) {
-          console.warn("Could not outline text:", e);
+          console.warn("Could not outline barcode text:", e);
         }
-
-        const serializer = new XMLSerializer();
-        let source = serializer.serializeToString(svgClone);
-
-        if (!source.match(/^<\?xml/)) {
-          source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source;
-        }
-
-        const blob = new Blob([source], {
-          type: "image/svg+xml;charset=utf-8",
-        });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `ean13-${code || "barcode"}.svg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
       }
 
-      async function downloadLabelSvg() {
-        const label = document.getElementById("coffeeLabel");
-        if (!label) {
-          alert("Label not found.");
-          return;
-        }
+      labelClone.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
 
-        const labelClone = label.cloneNode(true);
-        const barcodeClone = labelClone.querySelector("svg");
-        if (barcodeClone) {
-          try {
-            await outlineTextInSvg(barcodeClone);
-          } catch (e) {
-            console.warn("Could not outline barcode text:", e);
-          }
-        }
+      const serializer = new XMLSerializer();
+      const serializedLabel = serializer.serializeToString(labelClone);
+      const width = label.offsetWidth;
+      const height = label.offsetHeight;
 
-        labelClone.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+      const styles = Array.from(document.querySelectorAll("head style"))
+        .map((style) => style.textContent || "")
+        .join("\n");
 
-        const serializer = new XMLSerializer();
-        const serializedLabel = serializer.serializeToString(labelClone);
-        const width = label.offsetWidth;
-        const height = label.offsetHeight;
-
-        const styles = Array.from(document.querySelectorAll("head style"))
-          .map((style) => style.textContent || "")
-          .join("\n");
-
-        const svg = `
+      const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
 <style><![CDATA[${styles}]]></style>
 <foreignObject width="100%" height="100%">
@@ -588,190 +564,191 @@ ${serializedLabel}
 </foreignObject>
 </svg>`;
 
-        const blob = new Blob([svg], {
-          type: "image/svg+xml;charset=utf-8",
+      const blob = new Blob([svg], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "coffee-label.svg";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function bulkDownload() {
+      const bulkErrorEl = document.getElementById("bulkError");
+      bulkErrorEl.textContent = "";
+
+      const raw = document.getElementById("bulkInput").value;
+      const lines = raw
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+
+      if (lines.length === 0) {
+        bulkErrorEl.textContent = "Add at least one code (one per line).";
+        return;
+      }
+
+      const zip = new JSZip();
+      const invalid = [];
+
+      for (const line of lines) {
+        const code = line;
+
+        if (!/^\d{12,13}$/.test(code)) {
+          invalid.push(code);
+          continue;
+        }
+
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+
+        JsBarcode(svg, code, {
+          format: "ean13",
+          lineColor: "#000000",
+          background: "#ffffff",
+          width: 2,
+          height: 20,
+          font: "PP Neue Montreal",
+          fontSize: 18,
+          margin: 0,
+          flat: true,
+          textMargin: 0,
         });
-        const url = URL.createObjectURL(blob);
 
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "coffee-label.svg";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        try {
+          await outlineTextInSvg(svg);
+        } catch (e) {
+          console.warn("Could not outline text for code", code, e);
+        }
+
+        const serializer = new XMLSerializer();
+        let source = serializer.serializeToString(svg);
+
+        if (!source.match(/^<\?xml/)) {
+          source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source;
+        }
+
+        zip.file(`ean13-${code}.svg`, source);
       }
 
-      async function bulkDownload() {
-        const bulkErrorEl = document.getElementById("bulkError");
-        bulkErrorEl.textContent = "";
-
-        const raw = document.getElementById("bulkInput").value;
-        const lines = raw
-          .split("\n")
-          .map((l) => l.trim())
-          .filter((l) => l.length > 0);
-
-        if (lines.length === 0) {
-          bulkErrorEl.textContent = "Add at least one code (one per line).";
-          return;
-        }
-
-        const zip = new JSZip();
-        const invalid = [];
-
-        for (const line of lines) {
-          const code = line;
-
-          if (!/^\d{12,13}$/.test(code)) {
-            invalid.push(code);
-            continue;
-          }
-
-          const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg"
-          );
-
-          JsBarcode(svg, code, {
-            format: "ean13",
-            lineColor: "#000000",
-            background: "#ffffff",
-            width: 2,
-            height: 20,
-            font: "PP Neue Montreal",
-            fontSize: 18,
-            margin: 0,
-            flat: true,
-            textMargin: 0,
-          });
-
-          try {
-            await outlineTextInSvg(svg);
-          } catch (e) {
-            console.warn("Could not outline text for code", code, e);
-          }
-
-          const serializer = new XMLSerializer();
-          let source = serializer.serializeToString(svg);
-
-          if (!source.match(/^<\?xml/)) {
-            source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source;
-          }
-
-          zip.file(`ean13-${code}.svg`, source);
-        }
-
-        if (invalid.length === lines.length) {
-          bulkErrorEl.textContent =
-            "All lines were invalid. Use 12 or 13 digits per line.";
-          return;
-        }
-
-        if (invalid.length > 0) {
-          bulkErrorEl.textContent =
-            "Some codes were skipped:\n" + invalid.join("\n");
-        }
-
-        const blob = await zip.generateAsync({ type: "blob" });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "ean13-barcodes.zip";
-        document.body.appendChild(a);
-        a.click();
-
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+      if (invalid.length === lines.length) {
+        bulkErrorEl.textContent =
+          "All lines were invalid. Use 12 or 13 digits per line.";
+        return;
       }
 
-      document.getElementById("generateBtn").addEventListener("click", () => {
-        const code = document.getElementById("codeInput").value.trim();
-        generateBarcode(code);
-      });
+      if (invalid.length > 0) {
+        bulkErrorEl.textContent =
+          "Some codes were skipped:\n" + invalid.join("\n");
+      }
 
-      document
-        .getElementById("downloadBtn")
-        .addEventListener("click", downloadSVG);
-      document
-        .getElementById("bulkDownloadBtn")
-        .addEventListener("click", bulkDownload);
-      document
-        .getElementById("downloadLabelBtn")
-        .addEventListener("click", downloadLabelSvg);
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
 
-      function fitRegionText() {
-        const el = document.getElementById("labelCoffeeRegion");
-        if (!el) return;
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ean13-barcodes.zip";
+      document.body.appendChild(a);
+      a.click();
 
-        const MAX_HEIGHT = 320; // px
-        const BASE_SIZE = 107; // matches your CSS
-        const MIN_SIZE = 40; // don't let it get absurdly tiny
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
 
-        // reset to base size first so it can grow back if text gets shorter
-        el.style.fontSize = BASE_SIZE + "px";
+    document.getElementById("generateBtn").addEventListener("click", () => {
+      const code = document.getElementById("codeInput").value.trim();
+      generateBarcode(code);
+    });
 
-        // If it already fits, done
-        if (el.offsetHeight <= MAX_HEIGHT) return;
+    document
+      .getElementById("downloadBtn")
+      .addEventListener("click", downloadSVG);
+    document
+      .getElementById("bulkDownloadBtn")
+      .addEventListener("click", bulkDownload);
+    document
+      .getElementById("downloadLabelBtn")
+      .addEventListener("click", downloadLabelSvg);
 
-        // Simple shrink loop
-        let size = BASE_SIZE;
-        let safety = 40; // prevent infinite loops
+    function fitRegionText() {
+      const el = document.getElementById("labelCoffeeRegion");
+      if (!el) return;
 
-        while (
-          el.offsetHeight > MAX_HEIGHT &&
-          size > MIN_SIZE &&
-          safety-- > 0
-        ) {
-          size -= 2; // step down 2px
-          el.style.fontSize = size + "px";
+      const MAX_HEIGHT = 320; // px
+      const BASE_SIZE = 107; // matches your CSS
+      const MIN_SIZE = 40; // don't let it get absurdly tiny
+
+      // reset to base size first so it can grow back if text gets shorter
+      el.style.fontSize = BASE_SIZE + "px";
+
+      // If it already fits, done
+      if (el.offsetHeight <= MAX_HEIGHT) return;
+
+      // Simple shrink loop
+      let size = BASE_SIZE;
+      let safety = 40; // prevent infinite loops
+
+      while (
+        el.offsetHeight > MAX_HEIGHT &&
+        size > MIN_SIZE &&
+        safety-- > 0
+      ) {
+        size -= 2; // step down 2px
+        el.style.fontSize = size + "px";
+      }
+    }
+
+    const labelBindings = [
+      { inputId: "labelClassInput", targetId: "labelCoffeeClass" },
+      { inputId: "labelRegionInput", targetId: "labelCoffeeRegion" },
+      {
+        inputId: "labelDescriptorsInput",
+        targetId: "labelCoffeeDescriptors",
+      },
+      { inputId: "labelMethodInput", targetId: "labelCoffeeMethod" },
+    ];
+    labelBindings.forEach(({ inputId, targetId }) => {
+      const inputEl = document.getElementById(inputId);
+      const targetEl = document.getElementById(targetId);
+      if (!inputEl || !targetEl) return;
+
+      const sync = () => {
+        targetEl.textContent = inputEl.value;
+
+        // extra rule ONLY for region text
+        if (targetId === "labelCoffeeRegion") {
+          fitRegionText();
         }
-      }
+      };
 
-      const labelBindings = [
-        { inputId: "labelClassInput", targetId: "labelCoffeeClass" },
-        { inputId: "labelRegionInput", targetId: "labelCoffeeRegion" },
-        {
-          inputId: "labelDescriptorsInput",
-          targetId: "labelCoffeeDescriptors",
-        },
-        { inputId: "labelMethodInput", targetId: "labelCoffeeMethod" },
-      ];
-      labelBindings.forEach(({ inputId, targetId }) => {
-        const inputEl = document.getElementById(inputId);
-        const targetEl = document.getElementById(targetId);
-        if (!inputEl || !targetEl) return;
+      inputEl.addEventListener("input", sync);
+      sync();
+    });
 
-        const sync = () => {
-          targetEl.textContent = inputEl.value;
+    generateBarcode(document.getElementById("codeInput").value.trim());
+    fitRegionText();
 
-          // extra rule ONLY for region text
-          if (targetId === "labelCoffeeRegion") {
-            fitRegionText();
-          }
-        };
+    // Toggle barcode visibility inside label
+    const toggleCheckbox = document.getElementById("toggleLabelBarcode");
+    const barcodeContainer = document.querySelector("#coffeeLabel .barcode");
 
-        inputEl.addEventListener("input", sync);
-        sync();
-      });
+    if (toggleCheckbox && barcodeContainer) {
+      const applyBarcodeVisibility = () => {
+        barcodeContainer.style.display = toggleCheckbox.checked
+          ? "block"
+          : "none";
+      };
+      toggleCheckbox.addEventListener("change", applyBarcodeVisibility);
+      applyBarcodeVisibility(); // set initial state
+    }
+  </script>
+</body>
 
-      generateBarcode(document.getElementById("codeInput").value.trim());
-      fitRegionText();
-
-      // Toggle barcode visibility inside label
-      const toggleCheckbox = document.getElementById("toggleLabelBarcode");
-      const barcodeContainer = document.querySelector("#coffeeLabel .barcode");
-
-      if (toggleCheckbox && barcodeContainer) {
-        const applyBarcodeVisibility = () => {
-          barcodeContainer.style.display = toggleCheckbox.checked
-            ? "block"
-            : "none";
-        };
-        toggleCheckbox.addEventListener("change", applyBarcodeVisibility);
-        applyBarcodeVisibility(); // set initial state
-      }
-    </script>
-  </body>
 </html>
