@@ -25,7 +25,7 @@
         font-display: swap;
       }
 
-            @font-face {
+      @font-face {
         font-family: "PP Neue Montreal";
         src: url("./PPNeueMontreal-Medium.woff2") format("woff2");
         font-weight: 500;
@@ -230,6 +230,19 @@
           placeholder="Метод обработки"
         />
       </div>
+
+      <label
+        style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 4px;
+          margin-bottom: 12px;
+        "
+      >
+        <input type="checkbox" id="toggleLabelBarcode" checked />
+        Показывать штрих-код на этикетке
+      </label>
 
       <button style="display: none" id="downloadLabelBtn">
         Скачать этикетку (SVG)
@@ -745,6 +758,20 @@ ${serializedLabel}
 
       generateBarcode(document.getElementById("codeInput").value.trim());
       fitRegionText();
+
+      // Toggle barcode visibility inside label
+      const toggleCheckbox = document.getElementById("toggleLabelBarcode");
+      const barcodeContainer = document.querySelector("#coffeeLabel .barcode");
+
+      if (toggleCheckbox && barcodeContainer) {
+        const applyBarcodeVisibility = () => {
+          barcodeContainer.style.display = toggleCheckbox.checked
+            ? "block"
+            : "none";
+        };
+        toggleCheckbox.addEventListener("change", applyBarcodeVisibility);
+        applyBarcodeVisibility(); // set initial state
+      }
     </script>
   </body>
 </html>
