@@ -363,20 +363,15 @@
       </div>
     </div>
 
-    <h2>Mockup (фон + изображение + копия этикетки)</h2>
+    <h2>Мокап</h2>
 
     <div class="mockup-wrap">
       <div class="controls mockup-controls">
-        <div class="group">
-          <label style="user-select: none">
-            <input type="checkbox" id="mockupTransparent" />
-            Transparent BG
-          </label>
-        </div>
 
-        <div class="group">
+
+        <div class="group" style="display: none;">
           <label>
-            Image
+
             <input type="file" id="mockupImage" accept="image/*" />
           </label>
 
@@ -385,18 +380,20 @@
         </div>
 
         <div class="group">
-          <span style="font-size: 12px">BG presets</span>
+                  <div class="group">
+
+        </div>
           <button class="mockup-swatch" id="bg1" type="button" title="BG 1"></button>
           <button class="mockup-swatch" id="bg2" type="button" title="BG 2"></button>
           <button class="mockup-swatch" id="bg3" type="button" title="BG 3"></button>
           <button class="mockup-swatch" id="bg4" type="button" title="BG 4"></button>
-
-          <label>
-            Custom
-            <input type="color" id="mockupBgCustom" value="#ffffff" />
+          <label style="user-select: none">
+            <input type="checkbox" id="mockupTransparent" />
+            Прозрачный фон
           </label>
 
-          <button id="mockupDownloadImg" type="button">Скачать изображение (PNG)</button>
+
+          <button id="mockupDownloadImg" type="button">Скачать</button>
         </div>
       </div>
 
@@ -863,7 +860,7 @@ ${serializedLabel}
           pre.src = DEFAULT_MOCKUP_IMAGE;
         }
 
-        const BG_PRESETS = ["#d593f6", "#9cfa3d", "#ffffff", "#000000"];
+        const BG_PRESETS = ["#D593F6", "#E5E950", "#ffffff", "#000000"];
 
         function setActiveSwatch(activeEl) {
           [bg1, bg2, bg3, bg4].forEach((el) => el && el.classList.remove("is-active"));
